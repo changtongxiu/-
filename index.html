@@ -1,41 +1,80 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>JS压缩图片插件</title>
-	<meta charset="utf-8" />
-	<style type="text/css">
-		.preview {
-			width: 200px;
-		}
-	</style>
-</head>
-<body>
-<input type="file" multiple id="image" />
-<div id="preview"></div>
+	<head>
+		<title>JS压缩图片插件</title>
+		<meta charset="utf-8" />
+		<style type="text/css">
+			.preview {
+				width: 200px;
+			}
+		</style>
+	</head>
+	<body>
+		<input type="file" multiple id="image" />
+		<div id="preview"></div>
 
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript" src="jquery.imagecompress.js"></script>
-<script type="text/javascript">
-	$('#image').imageCompress({
-		'quality': 50,
-		'onloadStart': function(result){
-			console.log('读取图片开始'+result);
-		},
-		'onloadEnd': function(result){
-			console.log('读取图片结束'+result);
-		},
-		'oncompressStart': function(result){
-			console.log('压缩图片开始'+result);
-		},
-		'oncompressEnd': function(result){
-			console.log('压缩图片结束'+result);
-			$('#preview').append(result);
-			$('#preview').find('img').addClass('preview');
-		},
-		'callback': function(){
-			console.log('处理完毕');
-		}
-	});
-</script>
-</body>
+		<script type="text/javascript" src="jquery.js"></script>
+		<script type="text/javascript" src="jquery.imagecompress.js"></script>
+		<script type="text/javascript">
+			$('#image').imageCompress({
+				'quality': 50,
+				'onloadStart': function(result) {
+					console.log('读取图片开始' + result);
+				},
+				'onloadEnd': function(result) {
+					console.log('读取图片结束' + result);
+				},
+				'oncompressStart': function(result) {
+					console.log('压缩图片开始' + result);
+				},
+				'oncompressEnd': function(result) {
+					console.log('压缩图片结束' + result);
+					var imgBase = result.src //在这里我直接取到压缩后的base64的图片
+					//$('#preview').append(result);   如果直接放入页面中就可以用这种方法 ，不过我是上传成功后再次调取图片
+					//$('#preview').find('img').addClass('preview');
+					let blob = dataURLtoFile(imgBase, 'image/jpeg'); //为了配合后端这里 把base64的图片转成file文件的格式  ，也可以直接上传base64的格式图片
+					submitPic(blob)   //这里是上传图片file格式上传
+				},
+				'callback': function() {
+					console.log('处理完毕');
+				}
+			});
+
+			function dataURLtoFile(dataURI, type) { //把base64格式的图片转化成file格式
+				let binary = atob(dataURI.split(',')[1]);
+				let array = [];
+				for (let i = 0; i < binary.length; i++) {
+					array.push(binary.charCodeAt(i));
+				}
+				return new Blob([new Uint8Array(array)], {
+					type: type
+				});
+			}
+
+			function submitPic(fileData) {
+				var form = new FormData();
+				// form.append("test", "9");
+				var fileOfBlob = new File([fileData], new Date() + '.jpg'); // 重命名了文件
+				form.append("test", fileOfBlob);
+				console.log(form, fileData)
+				$.ajax({
+					type: 'post',
+					data: form,
+					url: 'https://wxapi.baiaomaterials.com/mall-logistics-api/app/base/upload',
+					processData: false,
+					contentType: false,
+					success: function(data) {
+						if (data.code == '200') {
+							alert('上传成功')
+						} else {
+							alert(data.msg)
+						}
+					},
+					error: function() {
+						alert("上传图片失败！");
+					}
+				});
+			}
+		</script>
+	</body>
 </html>
