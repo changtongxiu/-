@@ -30,8 +30,6 @@
 				'oncompressEnd': function(result) {
 					console.log('压缩图片结束' + result);
 					var imgBase = result.src //在这里我直接取到压缩后的base64的图片
-					//$('#preview').append(result);   如果直接放入页面中就可以用这种方法 ，不过我是上传成功后再次调取图片
-					//$('#preview').find('img').addClass('preview');
 					let blob = dataURLtoFile(imgBase, 'image/jpeg'); //为了配合后端这里 把base64的图片转成file文件的格式  ，也可以直接上传base64的格式图片
 					submitPic(blob)   //这里是上传图片file格式上传
 				},
@@ -53,7 +51,6 @@
 
 			function submitPic(fileData) {
 				var form = new FormData();
-				// form.append("test", "9");
 				var fileOfBlob = new File([fileData], new Date() + '.jpg'); // 重命名了文件
 				form.append("test", fileOfBlob);
 				console.log(form, fileData)
